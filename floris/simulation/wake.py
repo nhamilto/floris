@@ -24,6 +24,7 @@ from .wake_turbulence.direct import Direct as DirectTurbulence
 from .wake_deflection.jimenez import Jimenez
 from .wake_velocity.multizone import MultiZone
 from .wake_turbulence.ishihara_qian import IshiharaQian as IshiharaQianTurbulence
+from .wake_combination.fractional_norm import FractionalNorm
 from .wake_turbulence.crespo_hernandez import (
     CrespoHernandez as CrespoHernandezTurbulence,
 )
@@ -98,7 +99,12 @@ class Wake:
         }
         self.deflection_model = properties["deflection_model"]
 
-        self._combination_models = {"fls": FLS, "sosfs": SOSFS, "max": MAX}
+        self._combination_models = {
+            "fls": FLS,
+            "sosfs": SOSFS,
+            "max": MAX,
+            "fracnorm": FractionalNorm,
+        }
         self.combination_model = properties["combination_model"]
 
     # Getters & Setters
@@ -231,7 +237,12 @@ class Wake:
     @combination_model.setter
     def combination_model(self, value):
         if type(value) is str:
-            self._combination_model = self._combination_models[value]()
+            if "wake_combination_parameters" not in self.parameters.keys():
+                self._combination_model = self._combination_models[value]({})
+            else:
+                self._combination_model = self._combination_models[value](
+                    self.parameters["wake_combination_parameters"]
+                )
         elif isinstance(value, WakeCombination):
             self._combination_model = value
         else:

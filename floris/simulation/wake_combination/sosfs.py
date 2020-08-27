@@ -21,8 +21,8 @@ class SOSFS(WakeCombination):
     wake velocity deficits to the base flow field.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parameter_dictionary):
+        super().__init__(parameter_dictionary)
         self.model_string = "sosfs"
 
     def function(self, u_field, u_wake):

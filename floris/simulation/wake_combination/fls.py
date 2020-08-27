@@ -19,8 +19,8 @@ class FLS(WakeCombination):
     deficits to the freestream flow field.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parameter_dictionary):
+        super().__init__(parameter_dictionary)
         self.model_string = "fls"
 
     def function(self, u_field, u_wake):

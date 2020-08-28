@@ -13,6 +13,7 @@
 # See https://floris.readthedocs.io for documentation
 
 import numpy as np
+
 import scipy as sp
 
 from ..utilities import Vec3

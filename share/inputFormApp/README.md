@@ -2,10 +2,10 @@
 
 ## Setup
 
-This setup assumes that python 3 and pip are already installed. 
+This setup assumes that python 3 and pip are already installed.
 
 * Install Requirements
-	```bash 
+	```bash
  	pip install -r requirements.txt
 	```
 

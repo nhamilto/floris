@@ -16,6 +16,7 @@
 import math
 
 import numpy as np
+
 from scipy.stats import norm
 from scipy.spatial import distance_matrix
 from scipy.interpolate import interp1d

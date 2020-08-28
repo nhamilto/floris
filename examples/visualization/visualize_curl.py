@@ -13,9 +13,8 @@
 # See https://floris.readthedocs.io for documentation
 
 
-import matplotlib.pyplot as plt
-
 import floris.tools as wfct
+import matplotlib.pyplot as plt
 from floris.utilities import Vec3
 
 

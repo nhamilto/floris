@@ -31,7 +31,7 @@ FoamFile
 
   writeControl      adjustableRunTime;
 
-  writeInterval     50.0; 
+  writeInterval     50.0;
 
   purgeWrite        0;
 
@@ -92,4 +92,3 @@ FoamFile
   }
 
 // ************************************************************************* //
-

@@ -17,12 +17,12 @@
 
 import numpy as np
 import pandas as pd
+
+import floris.tools as wfct
 import matplotlib.pyplot as plt
 
 # This import registers the 3D projection, but is otherwise unused.
 from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 unused import
-
-import floris.tools as wfct
 
 
 fi = wfct.floris_interface.FlorisInterface("../example_input.json")

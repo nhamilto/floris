@@ -14,8 +14,8 @@
 
 
 import numpy as np
-import pytest
 
+import pytest
 from floris.simulation import Floris
 
 

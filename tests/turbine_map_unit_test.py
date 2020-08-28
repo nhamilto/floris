@@ -14,7 +14,6 @@
 
 
 import pytest
-
 from floris.utilities import Vec3
 from floris.simulation import Turbine, TurbineMap
 

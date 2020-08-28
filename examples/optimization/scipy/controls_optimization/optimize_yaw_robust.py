@@ -22,9 +22,9 @@
 import os
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 import floris.tools as wfct
+import matplotlib.pyplot as plt
 import floris.tools.cut_plane as cp
 import floris.tools.visualization as vis
 from floris.tools.optimization.scipy.yaw import YawOptimization

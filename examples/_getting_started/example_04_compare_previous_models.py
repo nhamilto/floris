@@ -17,9 +17,8 @@
 # wake steering, it's important to couple with the Jimenez model of deflection
 # to avoid software errors in functions only defined for gaussian models
 
-import matplotlib.pyplot as plt
-
 import floris.tools as wfct
+import matplotlib.pyplot as plt
 
 
 # Initialize the FLORIS interface for 4 seperate models defined as JSONS

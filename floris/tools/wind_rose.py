@@ -21,12 +21,12 @@ import pickle
 
 import numpy as np
 import pandas as pd
+
 import dateutil
 import matplotlib.cm as cm
+import floris.utilities as geo
 import matplotlib.pyplot as plt
 from pyproj import Proj
-
-import floris.utilities as geo
 
 
 class WindRose:
@@ -46,7 +46,9 @@ class WindRose:
             :keyprefix: wr-
     """
 
-    def __init__(self,):
+    def __init__(
+        self,
+    ):
         """
         Instantiate a WindRose object and set some initial parameter values.
         No explicit arguments required, and an additional method will need to

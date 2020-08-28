@@ -1,19 +1,10 @@
 {
-  "type": "floris_input",
-  "name": "floris_input_file_Example",
   "description": "Example FLORIS Input file",
   "farm": {
-    "type": "farm",
-    "name": "farm_example_2x2",
     "description": "Example 2x2 Wind Farm",
+    "name": "farm_example_2x2",
     "properties": {
-      "wind_speed": 8.0,
-      "wind_direction": 270.0,
-      "turbulence_intensity": 0.06,
-      "wind_shear": 0.12,
-      "wind_veer": 0.0,
       "air_density": 1.225,
-      "wake_combination": "sosfs",
       "layout_x": [
         0.0,
         800.0,
@@ -25,21 +16,29 @@
         0.0,
         630.0,
         630.0
-      ]
-    }
+      ],
+      "turbulence_intensity": 0.06,
+      "wake_combination": "sosfs",
+      "wind_direction": 270.0,
+      "wind_shear": 0.12,
+      "wind_speed": 8.0,
+      "wind_veer": 0.0
+    },
+    "type": "farm"
   },
+  "name": "floris_input_file_Example",
   "turbine": {
-    "type": "turbine",
-    "name": "nrel_5mw",
     "description": "NREL 5MW",
+    "name": "nrel_5mw",
     "properties": {
-      "rotor_diameter": 126.0,
-      "hub_height": 90.0,
+      "TSR": 8.0,
       "blade_count": 3,
+      "blade_pitch": 0.0,
+      "eta": 0.768,
+      "generator_efficiency": 1.0,
+      "hub_height": 90.0,
       "pP": 1.88,
       "pT": 1.88,
-      "generator_efficiency": 1.0,
-      "eta": 0.768,
       "power_thrust_table": {
         "power": [
           0.0,
@@ -76,7 +75,7 @@
           1.09515807,
           1.0227122,
           0.9196487,
-          0.85190470,
+          0.8519047,
           0.80328229,
           0.76675469,
           0.76209299,
@@ -132,57 +131,58 @@
           30.0
         ]
       },
-      "blade_pitch": 0.0,
-      "yaw_angle": 0.0,
+      "rotor_diameter": 126.0,
       "tilt_angle": 0.0,
-      "TSR": 8.0
-    }
+      "yaw_angle": 0.0
+    },
+    "type": "turbine"
   },
+  "type": "floris_input",
   "wake": {
-    "type": "wake",
-    "name": "wake_default",
     "description": "wake",
+    "name": "wake_default",
     "properties": {
-      "velocity_model": "gauss",
       "deflection_model": "gauss",
       "parameters": {
-        "turbulence_intensity": {
-          "initial": 0.1,
-          "constant": 0.73,
-          "ai": 0.8,
-          "downstream": -0.275
+        "gauss": {
+          "ad": 0.0,
+          "alpha": 0.58,
+          "bd": 0.0,
+          "beta": 0.077,
+          "ka": 0.38,
+          "kb": 0.004
         },
         "jensen": {
           "we": 0.05
         },
+        "jimenez": {
+          "ad": 0.0,
+          "bd": 0.0,
+          "kd": 0.05
+        },
         "mutlizone": {
-          "me": [
-            -0.5,
-            0.3,
-            1.0
-          ],
           "aU": 12.0,
           "bU": 1.3,
           "mU": [
             0.5,
             1.0,
             5.5
+          ],
+          "me": [
+            -0.5,
+            0.3,
+            1.0
           ]
         },
-        "jimenez": {
-          "kd": 0.05,
-          "ad": 0.0,
-          "bd": 0.0
-        },
-        "gauss": {
-          "ka": 0.38,
-          "kb": 0.004,
-          "alpha": 0.58,
-          "beta": 0.077,
-          "ad": 0.0,
-          "bd": 0.0
+        "turbulence_intensity": {
+          "ai": 0.8,
+          "constant": 0.73,
+          "downstream": -0.275,
+          "initial": 0.1
         }
-      }
-    }
+      },
+      "velocity_model": "gauss"
+    },
+    "type": "wake"
   }
 }

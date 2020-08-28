@@ -153,4 +153,3 @@ function InputsController($scope, $http, $log) {
       }
   };
 }
-

@@ -16,9 +16,8 @@
 # This example illustrates changing the properties of some of the turbines
 # This can be used to setup farms of different turbines
 
-import matplotlib.pyplot as plt
-
 import floris.tools as wfct
+import matplotlib.pyplot as plt
 
 
 # Initialize the FLORIS interface fi

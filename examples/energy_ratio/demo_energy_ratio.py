@@ -14,12 +14,12 @@
 
 
 import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import axes_size, make_axes_locatable
 
 import floris.tools as wfct
+import matplotlib.pyplot as plt
 import floris.tools.cut_plane as cp
 import floris.tools.visualization as vis
+from mpl_toolkits.axes_grid1 import axes_size, make_axes_locatable
 from floris.tools.energy_ratio import plot_energy_ratio, plot_energy_ratio_ws
 from floris.tools.energy_wake_loss import (
     overall_wake_loss,

@@ -14,9 +14,9 @@
 
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 import floris.tools as wfct
+import matplotlib.pyplot as plt
 
 
 # Side by Side, adjust T0 and T1 heights

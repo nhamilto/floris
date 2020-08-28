@@ -13,9 +13,9 @@
 # See https://floris.readthedocs.io for documentation
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 import floris.tools as wfct
+import matplotlib.pyplot as plt
 
 
 # Initialize the FLORIS interface fi

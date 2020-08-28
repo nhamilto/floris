@@ -17,9 +17,9 @@
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 import floris.tools as wfct
+import matplotlib.pyplot as plt
 
 
 fi = wfct.floris_interface.FlorisInterface("../example_input.json")

@@ -1,4 +1,3 @@
-
 from .version_class import VersionClass
 from .data_transform import DataTransform
 

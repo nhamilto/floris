@@ -16,6 +16,7 @@
 import os
 
 import numpy as np
+
 from sklearn import neighbors
 
 from ..utilities import Vec3

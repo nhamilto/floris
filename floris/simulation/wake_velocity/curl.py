@@ -11,6 +11,7 @@
 # the License.
 
 import numpy as np
+
 from scipy.ndimage.filters import gaussian_filter
 
 from ...utilities import Vec3, sind

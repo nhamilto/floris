@@ -7,7 +7,7 @@ More information on the metadata can be found here: https://eerscmap.usgs.gov/us
 
 Usage
 =========================
-For usage help: 
+For usage help:
 
 .. code-block:: python
 

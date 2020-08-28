@@ -1,21 +1,21 @@
-example_03_get_and_set_model_parameters.py 
-========================================== 
+example_03_get_and_set_model_parameters.py
+==========================================
 
 
-.. code-block:: python3 
+.. code-block:: python3
 
 	import matplotlib.pyplot as plt
 	import floris.tools as wfct
 
 Initialize the FLORIS interface fi
 
-.. code-block:: python3 
+.. code-block:: python3
 
 	fi = wfct.floris_interface.FlorisInterface("../example_input.json")
 
 Show the current model parameters
 
-.. code-block:: python3 
+.. code-block:: python3
 
 	print('All the model parameters and their current values:\n')
 	fi.show_model_parameters()
@@ -23,7 +23,7 @@ Show the current model parameters
 
 Show the current model parameters with docstring info
 
-.. code-block:: python3 
+.. code-block:: python3
 
 	print('All the model parameters, their current values, and docstrings:\n')
 	fi.show_model_parameters(verbose=True)
@@ -31,7 +31,7 @@ Show the current model parameters with docstring info
 
 Show a specific model parameter with its docstring
 
-.. code-block:: python3 
+.. code-block:: python3
 
 	print('A specific model parameter, its current value, and its docstring:\n')
 	fi.show_model_parameters(params=['ka'], verbose=False)
@@ -39,7 +39,7 @@ Show a specific model parameter with its docstring
 
 Get the current model parameters
 
-.. code-block:: python3 
+.. code-block:: python3
 
 	model_params = fi.get_model_parameters()
 	print('The current model parameters:\n')
@@ -48,7 +48,7 @@ Get the current model parameters
 
 Set parameters on the current model
 
-.. code-block:: python3 
+.. code-block:: python3
 
 	print('Set specific model parameters on the current wake model:\n')
 	params = {
@@ -61,7 +61,7 @@ Set parameters on the current model
 
 Check that the parameters were changed
 
-.. code-block:: python3 
+.. code-block:: python3
 
 	print('Observe that the requested paremeters changes have been made:\n')
 	model_params = fi.get_model_parameters()

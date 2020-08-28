@@ -15,8 +15,8 @@
 import copy
 
 import numpy as np
-import pytest
 
+import pytest
 from floris.simulation import Wake, Turbine, WindMap, FlowField, TurbineMap
 
 

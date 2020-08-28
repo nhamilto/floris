@@ -20,9 +20,9 @@ import pickle
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 import floris.tools as wfct
+import matplotlib.pyplot as plt
 
 
 ## Grab certain hi-TI five simulations from saved SOWFA data set

@@ -17,9 +17,9 @@ import copy
 
 import numpy as np
 import pandas as pd
+
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-
 from floris.simulation import Floris, Turbine, WindMap, TurbineMap
 
 from .cut_plane import CutPlane, get_plane_from_flow_data
@@ -315,6 +315,17 @@ class FlorisInterface(LoggerBase):
                     0
                 ].hub_height
                 x2_bounds = (10, hub_height * 2)
+        if normal_vector == "y":  # Rules of thumb for cut plane plane
+            if x1_bounds is None:
+                coords = self.floris.farm.flow_field.turbine_map.coords
+                max_diameter = self.floris.farm.flow_field.max_diameter
+                y = [coord.x1 for coord in coords]
+                x1_bounds = (min(y) - 2 * max_diameter, max(y) + 2 * max_diameter)
+            if x2_bounds is None:
+                hub_height = self.floris.farm.flow_field.turbine_map.turbines[
+                    0
+                ].hub_height
+                x2_bounds = (10, hub_height * 2)
 
         # Set up the points to test
         x1_array = np.linspace(x1_bounds[0], x1_bounds[1], num=x1_resolution)
@@ -331,6 +342,8 @@ class FlorisInterface(LoggerBase):
             points = np.row_stack((x1_array, x2_array, x3_array))
         if normal_vector == "x":
             points = np.row_stack((x3_array, x1_array, x2_array))
+        if normal_vector == "y":
+            points = np.row_stack((x1_array, x3_array, x2_array))
 
         # Recalculate wake with these points
         flow_field.calculate_wake(points=points)
@@ -1381,6 +1394,7 @@ class FlorisInterface(LoggerBase):
         wake_velocity_model=True,
         wake_deflection_model=True,
         turbulence_model=True,
+        combination_model=False,
     ):
         """
         Helper function to return the current wake model parameters and values.
@@ -1407,7 +1421,12 @@ class FlorisInterface(LoggerBase):
             dict: Dictionary containing model parameters and their values.
         """
         model_params = get_params(
-            self, params, wake_velocity_model, wake_deflection_model, turbulence_model
+            self,
+            params,
+            wake_velocity_model,
+            wake_deflection_model,
+            turbulence_model,
+            combination_model,
         )
 
         return model_params

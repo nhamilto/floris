@@ -14,6 +14,7 @@
 
 
 import numpy as np
+
 import scipy as sp
 from scipy.interpolate import griddata
 
@@ -540,9 +541,9 @@ class FlowField:
 
         # reinitialize the turbines
         for i, turbine in enumerate(self.turbine_map.turbines):
-            turbine.current_turbulence_intensity = self.wind_map.turbine_turbulence_intensity[
-                i
-            ]
+            turbine.current_turbulence_intensity = (
+                self.wind_map.turbine_turbulence_intensity[i]
+            )
             turbine.reset_velocities()
 
     def calculate_wake(self, no_wake=False, points=None, track_n_upstream_wakes=False):
@@ -575,9 +576,9 @@ class FlowField:
 
         # reinitialize the turbines
         for i, turbine in enumerate(self.turbine_map.turbines):
-            turbine.current_turbulence_intensity = self.wind_map.turbine_turbulence_intensity[
-                i
-            ]
+            turbine.current_turbulence_intensity = (
+                self.wind_map.turbine_turbulence_intensity[i]
+            )
             turbine.reset_velocities()
 
         # define the center of rotation with reference to 270 deg as center of
@@ -684,8 +685,14 @@ class FlowField:
                     ):
                         # only assess the effects of the current wake
 
-                        freestream_velocities = turbine_ti.calculate_swept_area_velocities(
-                            self.u_initial, coord_ti, rotated_x, rotated_y, rotated_z
+                        freestream_velocities = (
+                            turbine_ti.calculate_swept_area_velocities(
+                                self.u_initial,
+                                coord_ti,
+                                rotated_x,
+                                rotated_y,
+                                rotated_z,
+                            )
                         )
 
                         wake_velocities = turbine_ti.calculate_swept_area_velocities(

@@ -17,10 +17,10 @@ FoamFile
 #include        "../setUp"
 
 
-LESModel        $LESModel; 
-//LESModel        SmagorinskyABL; 
-//LESModel        Smagorinsky; 
-//LESModel        dynLagrangianCsBound; 
+LESModel        $LESModel;
+//LESModel        SmagorinskyABL;
+//LESModel        Smagorinsky;
+//LESModel        dynLagrangianCsBound;
 
 delta           smooth;
 

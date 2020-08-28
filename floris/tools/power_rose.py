@@ -17,8 +17,8 @@ import pickle
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
+import matplotlib.pyplot as plt
 from floris.utilities import wrap_180
 
 
@@ -40,7 +40,9 @@ class PowerRose:
     loaded.
     """
 
-    def __init__(self,):
+    def __init__(
+        self,
+    ):
         """
         Instantiate a PowerRose object. No explicit arguments required, and an
         additional method will need to be called to populate the PowerRose

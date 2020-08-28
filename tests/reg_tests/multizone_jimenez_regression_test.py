@@ -16,8 +16,8 @@
 import copy
 
 import numpy as np
-import pytest
 
+import pytest
 from floris.simulation import Floris, TurbineMap
 
 
@@ -28,8 +28,7 @@ except ImportError:
 
 
 class MultiZoneJimenezRegressionTest:
-    """
-    """
+    """"""
 
     def __init__(self):
         sample_inputs = SampleInputs()

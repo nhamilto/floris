@@ -6,10 +6,10 @@ import pickle
 from os import path
 
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy import interpolate
 
 import floris.tools as wfct
+import matplotlib.pyplot as plt
+from scipy import interpolate
 
 from ..logging_manager import LoggerBase
 

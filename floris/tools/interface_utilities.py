@@ -112,6 +112,7 @@ def get_params(
     wake_velocity_model=True,
     wake_deflection_model=True,
     turbulence_model=True,
+    combination_model=True,
 ):
     model_params = {}
 
@@ -151,6 +152,17 @@ def get_params(
         model_params["Wake Turbulence Parameters"] = wake_turb_vals
         del model_params["Wake Turbulence Parameters"]["logger"]
 
+    if combination_model:
+        wake_comb_vals = {}
+        obj = "fi.floris.farm.wake.combination_model"
+        props = get_props(obj, fi)
+        if params is not None:
+            props_subset = get_props_subset(params, props)
+            wake_turb_vals = get_prop_values(obj, fi, props_subset)
+        else:
+            wake_turb_vals = get_prop_values(obj, fi, props)
+        model_params["Wake Combination Parameters"] = wake_turb_vals
+        del model_params["Wake Combination Parameters"]["logger"]
     return model_params
 
 
@@ -217,6 +229,28 @@ def set_params(fi, params, verbose=True):
                     raise Exception(
                         (
                             "Wake turbulence parameter '{}' "
+                            + "not part of current model. Value '{}' was not "
+                            + "used."
+                        ).format(prop, params[param_dict][prop])
+                    )
+
+        if param_dict == "Wake Combination Parameters":
+            obj = "fi.floris.farm.wake.combination_model"
+            props = get_props(obj, fi)
+            for prop in params[param_dict]:
+                if prop in [val[0] for val in props]:
+                    exec(obj + "." + prop + " = " + str(params[param_dict][prop]))
+                    if verbose:
+                        print(
+                            "Wake combination parameter "
+                            + prop
+                            + " set to "
+                            + str(params[param_dict][prop])
+                        )
+                else:
+                    raise Exception(
+                        (
+                            "Wake combination parameter '{}' "
                             + "not part of current model. Value '{}' was not "
                             + "used."
                         ).format(prop, params[param_dict][prop])

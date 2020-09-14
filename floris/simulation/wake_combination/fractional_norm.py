@@ -24,7 +24,7 @@ class FractionalNorm(WakeCombination):
     $$
     """
 
-    default_parameters = {"norm_order": 1.5}
+    default_parameters = {"norm_order": 1.5, "wake_weight": 1.0}
 
     def __init__(self, parameter_dictionary):
         """
@@ -44,8 +44,9 @@ class FractionalNorm(WakeCombination):
         self.model_string = "fracnorm"
         model_dictionary = self._get_model_dict(__class__.default_parameters)
         self.norm_order = model_dictionary["norm_order"]
+        self.wake_weight = model_dictionary["wake_weight"]
 
-    def function(self, u_field, u_wake):
+    def function(self, u_field, u_wake, turbnum=None):
         """
         Combines the base flow field with the velocity deficits
         using variable or fractional norm.
@@ -58,10 +59,8 @@ class FractionalNorm(WakeCombination):
             np.array: The resulting flow field after applying the wake to the
                 base.
         """
-
-        return (u_wake ** self.norm_order + u_field ** self.norm_order) ** (
-            1 / self.norm_order
-        )
+        norm_order = self.norm_order[turbnum]
+        return (u_wake**norm_order + u_field**norm_order)**(1 / norm_order)
 
     @property
     def norm_order(self):
@@ -83,17 +82,46 @@ class FractionalNorm(WakeCombination):
 
     @norm_order.setter
     def norm_order(self, value):
-        if type(value) is not float:
-            err_msg = (
-                "Invalid value type given for " + "norm_order: {}, expected float."
-            ).format(value)
-            self.logger.error(err_msg, stack_info=True)
-            raise ValueError(err_msg)
+        # if type(value) is not np.array:  # or type(value) is not list:
+        #     err_msg = ("Invalid value type given for " +
+        #                "norm_order: {}, expected float.").format(value)
+        #     self.logger.error(err_msg, stack_info=True)
+        #     raise ValueError(err_msg)
         self._norm_order = value
         if value != __class__.default_parameters["norm_order"]:
             self.logger.info(
-                (
-                    "Current value of norm_order, {0}, is not equal to tuned "
-                    + "value of {1}."
-                ).format(value, __class__.default_parameters["norm_order"])
-            )
+                ("Current value of norm_order, {0}, is not equal to tuned " +
+                 "value of {1}.").format(
+                     value, __class__.default_parameters["norm_order"]))
+
+    @property
+    def wake_weight(self):
+        """
+        The value used as the exponent to the number of wakes influencing a given turbine.
+
+        **Note:** This is a virtual property used to "get" or "set" a value.
+
+        Args:
+            wake_weight (float): exponent to nwakes
+
+        Returns:
+            float: wake_weight
+
+        Raises:
+            ValueError: Invalid value.
+        """
+        return self._wake_weight
+
+    @wake_weight.setter
+    def wake_weight(self, value):
+        if type(value) is not float:
+            err_msg = ("Invalid value type given for " +
+                       "wake_weight: {}, expected float.").format(value)
+            self.logger.error(err_msg, stack_info=True)
+            raise ValueError(err_msg)
+        self._wake_weight = value
+        if value != __class__.default_parameters["wake_weight"]:
+            self.logger.info(
+                ("Current value of wake_weight, {0}, is not equal to tuned " +
+                 "value of {1}.").format(
+                     value, __class__.default_parameters["wake_weight"]))

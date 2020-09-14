@@ -12,7 +12,6 @@
 
 # See https://floris.readthedocs.io for documentation
 
-
 import numpy as np
 
 import scipy as sp
@@ -27,7 +26,6 @@ class FlowField:
     creating the wind farm domain and initializing and computing the flow field
     based on the chosen wake models and farm model.
     """
-
     def __init__(
         self,
         wind_shear,
@@ -67,14 +65,18 @@ class FlowField:
             specified_wind_height=specified_wind_height,
         )
         # TODO consider remapping wake_list with reinitialize flow field
-        self.wake_list = {turbine: None for _, turbine in self.turbine_map.items}
+        self.wake_list = {
+            turbine: None
+            for _, turbine in self.turbine_map.items
+        }
 
     def _discretize_turbine_domain(self):
         """
         Create grid points at each turbine
         """
         xt = [coord.x1 for coord in self.turbine_map.coords]
-        rotor_points = int(np.sqrt(self.turbine_map.turbines[0].grid_point_count))
+        rotor_points = int(
+            np.sqrt(self.turbine_map.turbines[0].grid_point_count))
         x_grid = np.zeros((len(xt), rotor_points, rotor_points))
         y_grid = np.zeros((len(xt), rotor_points, rotor_points))
         z_grid = np.zeros((len(xt), rotor_points, rotor_points))
@@ -101,22 +103,23 @@ class FlowField:
                     xoffset = x_grid[i, j, k] - coord.x1
                     yoffset = y_grid[i, j, k] - coord.x2
                     x_grid[i, j, k] = (
-                        xoffset * cosd(-1 * self.wind_map.turbine_wind_direction[i])
-                        - yoffset * sind(-1 * self.wind_map.turbine_wind_direction[i])
-                        + coord.x1
-                    )
+                        xoffset *
+                        cosd(-1 * self.wind_map.turbine_wind_direction[i]) -
+                        yoffset *
+                        sind(-1 * self.wind_map.turbine_wind_direction[i]) +
+                        coord.x1)
 
                     y_grid[i, j, k] = (
-                        yoffset * cosd(-1 * self.wind_map.turbine_wind_direction[i])
-                        + xoffset * sind(-1 * self.wind_map.turbine_wind_direction[i])
-                        + coord.x2
-                    )
+                        yoffset *
+                        cosd(-1 * self.wind_map.turbine_wind_direction[i]) +
+                        xoffset *
+                        sind(-1 * self.wind_map.turbine_wind_direction[i]) +
+                        coord.x2)
 
         return x_grid, y_grid, z_grid
 
-    def _discretize_gridded_domain(
-        self, xmin, xmax, ymin, ymax, zmin, zmax, resolution
-    ):
+    def _discretize_gridded_domain(self, xmin, xmax, ymin, ymax, zmin, zmax,
+                                   resolution):
         """
         Generate a structured grid for the entire flow field domain.
         resolution: Vec3
@@ -156,8 +159,7 @@ class FlowField:
         if with_resolution is not None:
             xmin, xmax, ymin, ymax, zmin, zmax = self.domain_bounds
             self.x, self.y, self.z = self._discretize_gridded_domain(
-                xmin, xmax, ymin, ymax, zmin, zmax, with_resolution
-            )
+                xmin, xmax, ymin, ymax, zmin, zmax, with_resolution)
         else:
             if points is not None:
 
@@ -210,15 +212,18 @@ class FlowField:
 
                 self.x = np.append(
                     self.x,
-                    np.append(points[0, :], np.repeat(points[0, 0], buffer_amount)),
+                    np.append(points[0, :],
+                              np.repeat(points[0, 0], buffer_amount)),
                 )
                 self.y = np.append(
                     self.y,
-                    np.append(points[1, :], np.repeat(points[1, 0], buffer_amount)),
+                    np.append(points[1, :],
+                              np.repeat(points[1, 0], buffer_amount)),
                 )
                 self.z = np.append(
                     self.z,
-                    np.append(points[2, :], np.repeat(points[2, 0], buffer_amount)),
+                    np.append(points[2, :],
+                              np.repeat(points[2, 0], buffer_amount)),
                 )
                 self.x = np.reshape(self.x, shape)
                 self.y = np.reshape(self.y, shape)
@@ -237,9 +242,8 @@ class FlowField:
         self.wind_map.calculate_wind_speed(grid=True)
 
         self.u_initial = (
-            self.wind_map.grid_wind_speed
-            * (self.z / self.specified_wind_height) ** self.wind_shear
-        )
+            self.wind_map.grid_wind_speed *
+            (self.z / self.specified_wind_height)**self.wind_shear)
         self.v_initial = np.zeros(np.shape(self.u_initial))
         self.w_initial = np.zeros(np.shape(self.u_initial))
 
@@ -247,9 +251,8 @@ class FlowField:
         self.v = self.v_initial.copy()
         self.w = self.w_initial.copy()
 
-    def _compute_turbine_velocity_deficit(
-        self, x, y, z, turbine, coord, deflection, flow_field
-    ):
+    def _compute_turbine_velocity_deficit(self, x, y, z, turbine, coord,
+                                          deflection, flow_field):
         """Implement current wake velocity model.
 
         Args:
@@ -263,14 +266,12 @@ class FlowField:
         """
         # velocity deficit calculation
         u_deficit, v_deficit, w_deficit = self.wake.velocity_function(
-            x, y, z, turbine, coord, deflection, flow_field
-        )
+            x, y, z, turbine, coord, deflection, flow_field)
 
         # calculate spanwise and streamwise velocities if needed
         if hasattr(self.wake.velocity_model, "calculate_VW"):
             v_deficit, w_deficit = self.wake.velocity_model.calculate_VW(
-                v_deficit, w_deficit, coord, turbine, flow_field, x, y, z
-            )
+                v_deficit, w_deficit, coord, turbine, flow_field, x, y, z)
 
         # correction step
         if hasattr(self.wake.velocity_model, "correction_steps"):
@@ -286,9 +287,8 @@ class FlowField:
             )
         return u_deficit, v_deficit, w_deficit
 
-    def _compute_turbine_wake_turbulence(
-        self, ambient_TI, coord_ti, turbine_coord, turbine
-    ):
+    def _compute_turbine_wake_turbulence(self, ambient_TI, coord_ti,
+                                         turbine_coord, turbine):
         """Implement current wake turbulence model
 
         Args:
@@ -305,12 +305,13 @@ class FlowField:
             [type]: [description]
         """
 
-        return self.wake.turbulence_function(
-            ambient_TI, coord_ti, turbine_coord, turbine
-        )
+        return self.wake.turbulence_function(ambient_TI, coord_ti,
+                                             turbine_coord, turbine)
 
-    def _compute_turbine_wake_deflection(self, x, y, z, turbine, coord, flow_field):
-        return self.wake.deflection_function(x, y, z, turbine, coord, flow_field)
+    def _compute_turbine_wake_deflection(self, x, y, z, turbine, coord,
+                                         flow_field):
+        return self.wake.deflection_function(x, y, z, turbine, coord,
+                                             flow_field)
 
     def _rotated_grid(self, angle, center_of_rotation):
         """
@@ -318,12 +319,10 @@ class FlowField:
         """
         xoffset = self.x - center_of_rotation.x1
         yoffset = self.y - center_of_rotation.x2
-        rotated_x = (
-            xoffset * cosd(angle) - yoffset * sind(angle) + center_of_rotation.x1
-        )
-        rotated_y = (
-            xoffset * sind(angle) + yoffset * cosd(angle) + center_of_rotation.x2
-        )
+        rotated_x = (xoffset * cosd(angle) - yoffset * sind(angle) +
+                     center_of_rotation.x1)
+        rotated_y = (xoffset * sind(angle) + yoffset * cosd(angle) +
+                     center_of_rotation.x2)
         return rotated_x, rotated_y, self.z
 
     def _rotated_dir(self, angle, center_of_rotation, rotated_map):
@@ -356,19 +355,17 @@ class FlowField:
 
             resolution = self.wake.velocity_model.model_grid_resolution
             self.x, self.y, self.z = self._discretize_gridded_domain(
-                xmin, xmax, ymin, ymax, zmin, zmax, resolution
-            )
+                xmin, xmax, ymin, ymax, zmin, zmax, resolution)
             rotated_x, rotated_y, rotated_z = self._rotated_grid(
-                0.0, center_of_rotation
-            )
+                0.0, center_of_rotation)
         else:
             rotated_x, rotated_y, rotated_z = self._rotated_grid(
-                self.wind_map.grid_wind_direction, center_of_rotation
-            )
+                self.wind_map.grid_wind_direction, center_of_rotation)
 
         return rotated_x, rotated_y, rotated_z
 
-    def _calculate_area_overlap(self, wake_velocities, freestream_velocities, turbine):
+    def _calculate_area_overlap(self, wake_velocities, freestream_velocities,
+                                turbine):
         """
         compute wake overlap based on the number of points that are not freestream velocity, i.e. affected by the wake
         """
@@ -423,13 +420,9 @@ class FlowField:
             eps = 0.1
 
             # find circular mean of wind directions at turbines
-            wd = (
-                sp.stats.circmean(
-                    np.array(self.wind_map.turbine_wind_direction) * np.pi / 180
-                )
-                * 180
-                / np.pi
-            )
+            wd = (sp.stats.circmean(
+                np.array(self.wind_map.turbine_wind_direction) * np.pi / 180) *
+                  180 / np.pi)
 
             # set bounds based on the mean wind direction to avoid
             # cutting off wakes near boundaries in visualization
@@ -526,8 +519,7 @@ class FlowField:
 
         # initialize derived attributes and constants
         self.max_diameter = max(
-            [turbine.rotor_diameter for turbine in self.turbine_map.turbines]
-        )
+            [turbine.rotor_diameter for turbine in self.turbine_map.turbines])
 
         # FOR BUG FIX NOTICE THAT THIS ASSUMES THAT THE FIRST TURBINE DETERMINES WIND HEIGHT MAKING
         # CHANGING IT MOOT
@@ -542,11 +534,13 @@ class FlowField:
         # reinitialize the turbines
         for i, turbine in enumerate(self.turbine_map.turbines):
             turbine.current_turbulence_intensity = (
-                self.wind_map.turbine_turbulence_intensity[i]
-            )
+                self.wind_map.turbine_turbulence_intensity[i])
             turbine.reset_velocities()
 
-    def calculate_wake(self, no_wake=False, points=None, track_n_upstream_wakes=False):
+    def calculate_wake(self,
+                       no_wake=False,
+                       points=None,
+                       track_n_upstream_wakes=False):
         """
         Updates the flow field based on turbine activity.
 
@@ -572,13 +566,15 @@ class FlowField:
 
         if track_n_upstream_wakes:
             # keep track of the wakes upstream of each turbine
-            self.wake_list = {turbine: 0 for _, turbine in self.turbine_map.items}
+            self.wake_list = {
+                turbine: 0
+                for _, turbine in self.turbine_map.items
+            }
 
         # reinitialize the turbines
         for i, turbine in enumerate(self.turbine_map.turbines):
             turbine.current_turbulence_intensity = (
-                self.wind_map.turbine_turbulence_intensity[i]
-            )
+                self.wind_map.turbine_turbulence_intensity[i])
             turbine.reset_velocities()
 
         # define the center of rotation with reference to 270 deg as center of
@@ -590,13 +586,11 @@ class FlowField:
         # Rotate the turbines such that they are now in the frame of reference
         # of the wind direction simplifying computing the wakes and wake overlap
         rotated_map = self.turbine_map.rotated(
-            self.wind_map.turbine_wind_direction, center_of_rotation
-        )
+            self.wind_map.turbine_wind_direction, center_of_rotation)
 
         # rotate the discrete grid and turbine map
         initial_rotated_x, initial_rotated_y, rotated_z = self._rotated_dir(
-            self.wind_map.grid_wind_direction, center_of_rotation, rotated_map
-        )
+            self.wind_map.grid_wind_direction, center_of_rotation, rotated_map)
 
         # sort the turbine map
         sorted_map = rotated_map.sorted_in_x_as_list()
@@ -627,49 +621,46 @@ class FlowField:
             else:
                 # adjust grid rotation with respect to current turbine for
                 # heterogeneous wind direction
-                wd = (
-                    self.wind_map.turbine_wind_direction[idx]
-                    - self.wind_map.grid_wind_direction
-                )
+                wd = (self.wind_map.turbine_wind_direction[idx] -
+                      self.wind_map.grid_wind_direction)
 
                 # for straight wakes, change rx[idx] to initial_rotated_x
                 xoffset = center_of_rotation.x1 - rx[idx]
                 # for straight wakes, change ry[idx] to initial_rotated_y
                 yoffset = center_of_rotation.x2 - ry[idx]
-                y_grid_offset = xoffset * sind(wd) + yoffset * cosd(wd) - yoffset
+                y_grid_offset = xoffset * sind(wd) + yoffset * cosd(
+                    wd) - yoffset
                 rotated_y = initial_rotated_y - y_grid_offset
 
                 xoffset = center_of_rotation.x1 - initial_rotated_x
                 yoffset = center_of_rotation.x2 - initial_rotated_y
-                x_grid_offset = xoffset * cosd(wd) - yoffset * sind(wd) - xoffset
+                x_grid_offset = xoffset * cosd(wd) - yoffset * sind(
+                    wd) - xoffset
                 rotated_x = initial_rotated_x - x_grid_offset
 
             # update the turbine based on the velocity at its hub
-            turbine.update_velocities(
-                u_wake, coord, self, rotated_x, rotated_y, rotated_z
-            )
+            turbine.update_velocities(u_wake, coord, self, rotated_x,
+                                      rotated_y, rotated_z)
 
             # get the wake deflection field
             deflection = self._compute_turbine_wake_deflection(
-                rotated_x, rotated_y, rotated_z, turbine, coord, self
-            )
+                rotated_x, rotated_y, rotated_z, turbine, coord, self)
 
             # get the velocity deficit accounting for the deflection
             (
                 turb_u_wake,
                 turb_v_wake,
                 turb_w_wake,
-            ) = self._compute_turbine_velocity_deficit(
-                rotated_x, rotated_y, rotated_z, turbine, coord, deflection, self
-            )
+            ) = self._compute_turbine_velocity_deficit(rotated_x, rotated_y,
+                                                       rotated_z, turbine,
+                                                       coord, deflection, self)
 
             ###########
             # include turbulence model for the gaussian wake model from
-            # Porte-Agel
-            if (
-                "crespo_hernandez" == self.wake.turbulence_model.model_string
-                or self.wake.turbulence_model.model_string == "ishihara_qian"
-            ):
+            # Porte-Agel or Ishihara and Qian
+            if ("crespo_hernandez" == self.wake.turbulence_model.model_string
+                    or self.wake.turbulence_model.model_string ==
+                    "ishihara_qian"):
                 # compute area overlap of wake on other turbines and update
                 # downstream turbine turbulence intensities
                 for coord_ti, turbine_ti in sorted_map:
@@ -679,10 +670,9 @@ class FlowField:
                     )
                     idx = int(np.where(np.logical_and(yloc, xloc))[0])
 
-                    if (
-                        coord_ti.x1 > coord.x1
-                        and np.abs(coord.x2 - coord_ti.x2) < 2 * turbine.rotor_diameter
-                    ):
+                    if (coord_ti.x1 > coord.x1
+                            and np.abs(coord.x2 - coord_ti.x2) <
+                            2 * turbine.rotor_diameter):
                         # only assess the effects of the current wake
 
                         freestream_velocities = (
@@ -692,8 +682,7 @@ class FlowField:
                                 rotated_x,
                                 rotated_y,
                                 rotated_z,
-                            )
-                        )
+                            ))
 
                         wake_velocities = turbine_ti.calculate_swept_area_velocities(
                             self.u_initial - turb_u_wake,
@@ -704,21 +693,19 @@ class FlowField:
                         )
 
                         area_overlap = self._calculate_area_overlap(
-                            wake_velocities, freestream_velocities, turbine
-                        )
+                            wake_velocities, freestream_velocities, turbine)
 
                         # placeholder for TI/stability influence on how far
                         # wakes (and wake added TI) propagate downstream
                         downstream_influence_length = 15 * turbine.rotor_diameter
 
-                        if (
-                            area_overlap > 0.0
-                            and coord_ti.x1 <= downstream_influence_length + coord.x1
-                        ):
+                        if (area_overlap > 0.0 and coord_ti.x1 <=
+                                downstream_influence_length + coord.x1):
                             # Call wake turbulence model
                             # wake.turbulence_function(inputs)
                             ti_calculation = self._compute_turbine_wake_turbulence(
-                                self.wind_map.turbine_turbulence_intensity[idx],
+                                self.wind_map.
+                                turbine_turbulence_intensity[idx],
                                 coord_ti,
                                 coord,
                                 turbine,
@@ -727,18 +714,11 @@ class FlowField:
                             ti_added = area_overlap * ti_calculation
 
                             # TODO: need to revisit when we are returning fields of TI
-                            turbine_ti.current_turbulence_intensity = np.max(
-                                (
-                                    np.sqrt(
-                                        ti_added ** 2
-                                        + self.wind_map.turbine_turbulence_intensity[
-                                            idx
-                                        ]
-                                        ** 2
-                                    ),
-                                    turbine_ti.current_turbulence_intensity,
-                                )
-                            )
+                            turbine_ti.current_turbulence_intensity = np.max((
+                                np.sqrt(ti_added**2 + self.wind_map.
+                                        turbine_turbulence_intensity[idx]**2),
+                                turbine_ti.current_turbulence_intensity,
+                            ))
 
                             if track_n_upstream_wakes:
                                 # increment by one for each upstream wake
@@ -746,7 +726,17 @@ class FlowField:
 
             # combine this turbine's wake into the full wake field
             if not no_wake:
-                u_wake = self.wake.combination_function(u_wake, turb_u_wake)
+                if ("fracnorm" == self.wake.combination_model.model_string):
+                    # wd = 270 - self.wind_map.turbine_wind_direction[idx]
+                    # wake_array = self.turbine_map.number_of_wakes_iec(wd)
+                    # wake_array = {wt: nwakes for (wt, nwakes) in wake_array}
+                    # print(self.turbine_map.turbines.index(turbine))
+                    u_wake = self.wake.combination_function(
+                        u_wake, turb_u_wake,
+                        self.turbine_map.turbines.index(turbine))
+                else:
+                    u_wake = self.wake.combination_function(
+                        u_wake, turb_u_wake)
 
                 if self.wake.velocity_model.model_string == "curl":
                     self.v = turb_v_wake
@@ -764,8 +754,7 @@ class FlowField:
         # rotate the grid if it is curl
         if self.wake.velocity_model.model_string == "curl":
             self.x, self.y, self.z = self._rotated_grid(
-                -1 * self.wind_map.grid_wind_direction, center_of_rotation
-            )
+                -1 * self.wind_map.grid_wind_direction, center_of_rotation)
 
     # Getters & Setters
 
@@ -776,7 +765,8 @@ class FlowField:
     @specified_wind_height.setter
     def specified_wind_height(self, value):
         if value == -1:
-            self._specified_wind_height = self.turbine_map.turbines[0].hub_height
+            self._specified_wind_height = self.turbine_map.turbines[
+                0].hub_height
         else:
             self._specified_wind_height = value
 

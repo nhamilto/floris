@@ -727,12 +727,8 @@ class FlowField:
             # combine this turbine's wake into the full wake field
             if not no_wake:
                 if ("fracnorm" == self.wake.combination_model.model_string):
-                    # wd = 270 - self.wind_map.turbine_wind_direction[idx]
-                    # wake_array = self.turbine_map.number_of_wakes_iec(wd)
-                    # wake_array = {wt: nwakes for (wt, nwakes) in wake_array}
-                    # print(self.turbine_map.turbines.index(turbine))
                     u_wake = self.wake.combination_function(
-                        u_wake, turb_u_wake,
+                        u_wake, np.abs(turb_u_wake),
                         self.turbine_map.turbines.index(turbine))
                 else:
                     u_wake = self.wake.combination_function(

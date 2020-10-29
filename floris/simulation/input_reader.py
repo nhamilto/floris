@@ -63,6 +63,7 @@ class InputReader:
             "layout_y": list,
             "wind_x": list,
             "wind_y": list,
+            "wind_z": list,
         }
 
     def _parseJSON(self, filename):

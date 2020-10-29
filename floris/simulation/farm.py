@@ -34,7 +34,7 @@ class Farm:
     def __init__(self, instance_dictionary, turbine, wake):
         """
         The initialization method unpacks some of the data from the input
-        dictionary in order to create a couple of unerlying data structures:
+        dictionary in order to create a couple of underlying data structures:
 
             - :py:obj:`~.wind_map.WindMap`
             - :py:obj:`~.turbine_map.TurbineMap`
@@ -48,6 +48,8 @@ class Farm:
                     -   **wind_x** (*list*): The x-coordinates of the wind
                         speed measurements.
                     -   **wind_y** (*list*): The y-coordinates of the wind
+                        speed measurements.
+                    -   **wind_z** (*list*): The z-coordinates of the wind
                         speed measurements.
                     -   **wind_direction** (*list*): The wind direction
                         measurements (deg).
@@ -74,11 +76,12 @@ class Farm:
         layout_y = properties["layout_y"]
         wind_x = properties["wind_x"]
         wind_y = properties["wind_y"]
+        wind_z = properties["wind_z"]
 
         self.wind_map = WindMap(
             wind_speed=properties["wind_speed"],
             layout_array=(layout_x, layout_y),
-            wind_layout=(wind_x, wind_y),
+            wind_layout=(wind_x, wind_y, wind_z),
             turbulence_intensity=properties["turbulence_intensity"],
             wind_direction=properties["wind_direction"],
         )
@@ -242,7 +245,7 @@ class Farm:
         Returns:
             :py:obj:`~.wind_map.WindMap`
         """
-        # TODO: Does this need to be a virtual propert?
+        # TODO: Does this need to be a virtual property?
         return self._wind_map
 
     @wind_map.setter

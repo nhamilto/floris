@@ -80,7 +80,8 @@ class WindMap:
         """
         This method calculates the wind speeds at each point,
         interpolated and extrapolated from the input measurements.
-        # TODO: describe in detail how this is done.
+
+        Specified points define Delaunay triangulation pattern. Grid points within any triangle are determined with a barycentric interpolation scheme from the three enclosing known points. Gird points outside of all triangles are given the same value of the nearest specified or interpolated point.
 
         Args:
             grid (bool, optional): Switch to enable calculating values
@@ -91,15 +92,34 @@ class WindMap:
         """
         speed = self.input_speed
         if not grid:
-            if all(elem == speed[0] for elem in speed):
+            if len(np.unique(self.wind_layout[2])) > 1:
+                self.grid_layout = np.array(
+                    [
+                        np.unique(self.wind_layout[0]),
+                        np.unique(self.wind_layout[1]),
+                        np.unique(self.wind_layout[2]),
+                    ]
+                )
+                self._turbine_wind_speed = speed
+            elif all(elem == speed[0] for elem in speed):
                 self._turbine_wind_speed = [speed[0]] * len(self.layout_array[0])
             else:
                 interpolate = True
 
         else:
-            if all(elem == speed[0] for elem in speed):
+            if len(np.unique(self.wind_layout[2])) > 1:
+                self.grid_layout = np.array(
+                    [
+                        np.unique(self.wind_layout[0]),
+                        np.unique(self.wind_layout[1]),
+                        np.unique(self.wind_layout[2]),
+                    ]
+                )
+                self._grid_wind_speed = np.array(speed)[np.newaxis, np.newaxis, :]
+            elif all(elem == speed[0] for elem in speed):
                 self._grid_wind_speed = np.full(np.shape(self.grid_layout[0]), speed[0])
             else:
+                print("heres")
                 interpolate = True
 
         if interpolate:
@@ -316,8 +336,8 @@ class WindMap:
         Raises:
             SystemExit
         """
-        x, y = self.wind_layout[0], self.wind_layout[1]
-        xp, yp = x, y
+        x, y, z = self.wind_layout[0], self.wind_layout[1], self.wind_layout[2]
+        xp, yp, zp = x, y, z
         array_length = len(x)
 
         # check for case of unequal input lengths, stop all calculations if true
@@ -382,7 +402,7 @@ class WindMap:
 
             # reset input parameters
             if not self.duplicated_wind_layout:
-                self.wind_layout = (xp, yp)
+                self.wind_layout = (xp, yp, zp)
                 if len(self.input_direction) != 1:
                     self.input_direction = self.input_direction + self.input_direction
                 if len(self.input_ti) != 1:

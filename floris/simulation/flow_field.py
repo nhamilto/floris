@@ -229,17 +229,24 @@ class FlowField:
                 self.x, self.y, self.z = self._discretize_turbine_domain()
 
         # set grid point locations in wind_map
-        self.wind_map.grid_layout = (self.x, self.y)
+        self.wind_map.grid_layout = (self.x, self.y, self.z)
 
         # interpolate for initial values of flow field grid
         self.wind_map.calculate_turbulence_intensity(grid=True)
         self.wind_map.calculate_wind_direction(grid=True)
         self.wind_map.calculate_wind_speed(grid=True)
 
-        self.u_initial = (
-            self.wind_map.grid_wind_speed
-            * (self.z / self.specified_wind_height) ** self.wind_shear
-        )
+        ##### Check if more than one z location is specified
+        # if not, generate u_initial with shear exponent
+        if len(self.wind_map.wind_layout[2]) == 1:
+            self.u_initial = (
+                self.wind_map.grid_wind_speed
+                * (self.z / self.specified_wind_height) ** self.wind_shear
+            )
+        # if so, broadcast specified profile throughout domain
+        else:
+            self.u_initial = self.wind_map.grid_wind_speed
+
         self.v_initial = np.zeros(np.shape(self.u_initial))
         self.w_initial = np.zeros(np.shape(self.u_initial))
 

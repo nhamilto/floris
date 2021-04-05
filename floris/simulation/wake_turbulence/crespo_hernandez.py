@@ -1,4 +1,4 @@
-# Copyright 2020 NREL
+# Copyright 2021 NREL
 
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -29,9 +29,9 @@ class CrespoHernandez(WakeTurbulence):
 
     default_parameters = {
         "initial": 0.1,
-        "constant": 0.37,
+        "constant": 0.5,
         "ai": 0.8,
-        "downstream": -0.275,
+        "downstream": -0.32,
     }
 
     def __init__(self, parameter_dictionary):

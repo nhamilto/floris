@@ -1,4 +1,4 @@
-# Copyright 2020 NREL
+# Copyright 2021 NREL
 
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -13,6 +13,9 @@
 # See https://floris.readthedocs.io for documentation
 
 import copy
+from itertools import repeat
+from multiprocessing import cpu_count
+from multiprocessing.pool import Pool
 
 import numpy as np
 import pandas as pd
@@ -31,6 +34,10 @@ from .visualization import visualize_cut_plane
 from ..logging_manager import LoggerBase
 from .layout_functions import visualize_layout, build_turbine_loc
 from .interface_utilities import get_params, set_params, show_params
+
+
+def global_calc_one_AEP_case(FlorisInterface, wd, ws, freq, yaw=None):
+    return FlorisInterface._calc_one_AEP_case(wd, ws, freq, yaw)
 
 
 class FlorisInterface(LoggerBase):
@@ -152,7 +159,7 @@ class FlorisInterface(LoggerBase):
         if wind_layout or layout_array is not None:
             # Build turbine map and wind map (convenience layer for user)
             if layout_array is None:
-                layout_array = (self.layout_x, self.layout_y)
+                layout_array = self.get_turbine_layout()
             else:
                 turbine_map = TurbineMap(
                     layout_array[0],
@@ -321,8 +328,8 @@ class FlorisInterface(LoggerBase):
             if x1_bounds is None:
                 coords = self.floris.farm.flow_field.turbine_map.coords
                 max_diameter = self.floris.farm.flow_field.max_diameter
-                y = [coord.x1 for coord in coords]
-                x1_bounds = (min(y) - 2 * max_diameter, max(y) + 2 * max_diameter)
+                x = [coord.x1 for coord in coords]
+                x1_bounds = (min(x) - 2 * max_diameter, max(x) + 10 * max_diameter)
             if x2_bounds is None:
                 hub_height = self.floris.farm.flow_field.turbine_map.turbines[
                     0
@@ -867,6 +874,32 @@ class FlorisInterface(LoggerBase):
             turb_powers = [turbine.power for turbine in self.floris.farm.turbines]
             return np.sum(turb_powers)
 
+    def get_turbine_layout(self, z=False):
+        """
+        Get turbine layout
+
+        Args:
+            z (bool): When *True*, return lists of x, y, and z coords,
+            otherwise, return x and y only. Defaults to *False*.
+
+        Returns:
+            np.array: lists of x, y, and (optionally) z coordinates of
+                      each turbine
+        """
+        xcoords = np.array(
+            [turbine.x1 for turbine in self.floris.farm.turbine_map.coords]
+        )
+        ycoords = np.array(
+            [turbine.x2 for turbine in self.floris.farm.turbine_map.coords]
+        )
+        if z:
+            zcoords = np.array(
+                [turbine.x3 for turbine in self.floris.farm.turbine_map.coords]
+            )
+            return xcoords, ycoords, zcoords
+        else:
+            return xcoords, ycoords
+
     def get_turbine_power(
         self,
         include_unc=False,
@@ -1018,8 +1051,30 @@ class FlorisInterface(LoggerBase):
             self.calculate_wake(yaw_angles=yaw_angles, no_wake=no_wake)
             return list(mean_farm_power)
         else:
-            turb_powers = [turbine.power for turbine in self.floris.farm.turbines]
-            return turb_powers
+            return [turbine.power for turbine in self.floris.farm.turbines]
+
+    def get_power_curve(self, wind_speeds):
+        """
+        Return the power curve given a set of wind speeds
+
+        Args:
+            wind_speeds (np.array): array of wind speeds to get power curve
+        """
+
+        # Temporarily set the farm to a single turbine
+        saved_layout_x = self.layout_x
+        saved_layout_y = self.layout_y
+        self.reinitialize_flow_field(layout_array=([0], [0]))
+        power_return_array = []
+        for ws in wind_speeds:
+            self.reinitialize_flow_field(wind_speed=ws)
+            self.calculate_wake()
+            power_return_array.append(self.get_turbine_power()[0])
+
+        # Set it back
+        self.reinitialize_flow_field(layout_array=(saved_layout_x, saved_layout_y))
+
+        return np.array(power_return_array)
 
     def get_turbine_ct(self):
         """
@@ -1115,7 +1170,9 @@ class FlorisInterface(LoggerBase):
             include_unc=include_unc, unc_pmfs=unc_pmfs, unc_options=unc_options
         )
 
-    def get_farm_AEP(self, wd, ws, freq, yaw=None):
+    def get_farm_AEP(
+        self, wd, ws, freq, yaw=None, limit_ws=False, ws_limit_tol=0.001, ws_cutout=30.0
+    ):
         """
         Estimate annual energy production (AEP) for distributions of wind
         speed, wind direction and yaw offset.
@@ -1127,21 +1184,149 @@ class FlorisInterface(LoggerBase):
                 directions in wind rose.
             yaw (iterable, optional): List or array of yaw values if wake is
                 steering implemented. Defaults to None.
+            limit_ws (bool, optional): When *True*, detect wind speed when power
+                reaches it's maximum value for a given wind direction. For all
+                higher wind speeds, use last calculated value when below cut
+                out. Defaults to False.
+            ws_limit_tol (float, optional): Tolerance fraction for determining
+                wind speed where power stops changing. If limit_ws is *True*,
+                assume power remains constant up to cut out for wind speeds
+                above the point where power changes less than ws_limit_tol of
+                the previous power. Defaults to 0.001.
+            ws_cutout (float, optional): Cut out wind speed (m/s). If limit_ws
+                is *True*, assume power is zero for wind speeds greater than or
+                equal to ws_cutout.
 
         Returns:
             float: AEP for wind farm.
         """
         AEP_sum = 0
 
-        for i in range(len(wd)):
-            self.reinitialize_flow_field(wind_direction=[wd[i]], wind_speed=[ws[i]])
-            if yaw is None:
-                self.calculate_wake()
-            else:
-                self.calculate_wake(yaw[i])
+        # sort wd and ws by wind speed
+        inds = np.argsort(ws)
+        ws = ws[inds]
+        wd = wd[inds]
+        freq = freq[inds]
 
-            AEP_sum = AEP_sum + self.get_farm_power() * freq[i] * 8760
+        # keep track of wind speeds where power stops increasing for each wind
+        # direction
+        prev_pow = {wdir: 0.0 for wdir in np.unique(wd)}
+        use_prev_pow = {wdir: False for wdir in np.unique(wd)}
+
+        for i in range(len(wd)):
+            # If not using wind speed limit or still below maximum power, then
+            # calculate farm power
+            if not (limit_ws & use_prev_pow[wd[i]]):
+                self.reinitialize_flow_field(wind_direction=[wd[i]], wind_speed=[ws[i]])
+                if yaw is None:
+                    self.calculate_wake()
+                else:
+                    self.calculate_wake(yaw[i])
+
+                farm_power = self.get_farm_power()
+
+                # check if power has stopped increasing
+                if (
+                    limit_ws
+                    & (farm_power > 0)
+                    & (np.abs(farm_power / prev_pow[wd[i]] - 1) < ws_limit_tol)
+                ):
+                    use_prev_pow[wd[i]] = True
+
+                prev_pow[wd[i]] = farm_power
+
+            elif limit_ws & (ws[i] >= ws_cutout):
+                farm_power = 0.0
+            else:
+                farm_power = prev_pow[wd[i]]
+
+            AEP_sum = AEP_sum + farm_power * freq[i] * 8760
+
         return AEP_sum
+
+    def _calc_one_AEP_case(self, wd, ws, freq, yaw=None):
+        self.reinitialize_flow_field(wind_direction=[wd], wind_speed=[ws])
+        self.calculate_wake(yaw_angles=yaw)
+        return self.get_farm_power() * freq * 8760
+
+    def get_farm_AEP_parallel(self, wd, ws, freq, yaw=None, jobs=-1):
+        """
+        Estimate annual energy production (AEP) for distributions of wind
+        speed, wind direction and yaw offset with parallel computations on
+        a single comptuer.
+
+        Args:
+            wd (iterable): List or array of wind direction values.
+            ws (iterable): List or array of wind speed values.
+            freq (iterable): Frequencies corresponding to wind speeds and
+                directions in wind rose.
+            yaw (iterable, optional): List or array of yaw values if wake is
+                steering implemented. Defaults to None.
+            jobs (int, optional): The number of jobs (cores) to use in the parallel
+                computations.
+
+        Returns:
+            float: AEP for wind farm.
+        """
+        if jobs < -1:
+            raise ValueError("Input 'jobs' cannot be negative!")
+        if jobs == -1:
+            jobs = int(np.ceil(cpu_count() * 0.8))
+        if jobs > 0:
+            jobs = min(jobs, cpu_count())
+        if jobs > len(wd):
+            jobs = len(wd)
+
+        opt_AEP = 0.0
+
+        if yaw is not None:
+            global_arguments = list(zip(repeat(self), wd, ws, freq, yaw))
+        else:
+            global_arguments = list(zip(repeat(self), wd, ws, freq))
+        num_cases = len(wd)
+        chunksize = int(np.ceil(num_cases / jobs))
+
+        with Pool(jobs) as pool:
+            opt = pool.starmap(
+                global_calc_one_AEP_case, global_arguments, chunksize=chunksize
+            )
+            # add AEP to overall AEP
+            opt_AEP = opt_AEP + np.sum(opt)
+
+        return opt_AEP
+
+    def calculate_AEP_wind_limit(self, num_turbines, x_spacing, start_ws, threshold):
+        orig_layout_x = self.layout_x
+        orig_layout_y = self.layout_y
+        D = self.floris.farm.turbines[0].rotor_diameter
+
+        self.reinitialize_flow_field(
+            layout_array=(
+                [i * x_spacing * D for i in range(num_turbines)],
+                [0.0] * num_turbines,
+            ),
+            wind_speed=start_ws,
+        )
+        self.calculate_wake()
+
+        prev_power = 1.0
+        cur_power = self.get_farm_power()
+        ws = start_ws
+
+        while np.abs(prev_power - cur_power) / prev_power > threshold:
+            prev_power = cur_power
+            ws += 0.2
+            self.reinitialize_flow_field(wind_speed=ws)
+            self.calculate_wake()
+            cur_power = self.get_farm_power()
+        ws += 1.0
+
+        self.reinitialize_flow_field(
+            layout_array=(orig_layout_x, orig_layout_y), wind_speed=ws
+        )
+        self.calculate_wake()
+        self.max_power = self.get_farm_power()
+        self.ws_limit = ws
 
     def change_turbine(
         self, turb_num_array, turbine_change_dict, update_specified_wind_height=False
@@ -1337,18 +1522,11 @@ class FlorisInterface(LoggerBase):
 
     def set_rotor_diameter(self, rotor_diameter):
         """
-        Assign rotor diameter to turbines.
-
-        Args:
-            rotor_diameter (float): The rotor diameter(s) to be
-            applied to the turbines in meters.
+        This function has been replaced and no longer works correctly, assigning an error
         """
-        if isinstance(rotor_diameter, float) or isinstance(rotor_diameter, int):
-            rotor_diameter = [rotor_diameter] * len(self.floris.farm.turbines)
-        else:
-            rotor_diameter = rotor_diameter
-        for i, turbine in enumerate(self.floris.farm.turbines):
-            turbine.rotor_diameter = rotor_diameter[i]
+        raise Exception(
+            "function set_rotor_diameter has been removed.  Please use the function change_turbine going forward.  See examples/change_turbine for syntax"
+        )
 
     def show_model_parameters(
         self,
@@ -1473,9 +1651,7 @@ class FlorisInterface(LoggerBase):
         for i, turbine in enumerate(self.floris.farm.turbines):
             D = turbine.rotor_diameter
             break
-        coords = self.floris.farm.turbine_map.coords
-        layout_x = np.array([c.x1 for c in coords])
-        layout_y = np.array([c.x2 for c in coords])
+        layout_x, layout_y = self.get_turbine_layout()
 
         turbineLoc = build_turbine_loc(layout_x, layout_y)
 

@@ -32,7 +32,7 @@ may result in an unphysical solution.  Many of the example files will make use o
 License
 =======
 
-Copyright 2020 NREL
+Copyright 2021 NREL
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

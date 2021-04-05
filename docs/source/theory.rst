@@ -48,6 +48,11 @@ This model can be used when accurate modeling of yawed wakes
 is of interest and comptutational expense is not a priority.
 See :cite:`thy-martinez2019aerodynamics` for a full description.
 
+TurbOPark Wake Model
+====================
+The TurbOPark model of wake velocity deficit is defined in
+:cite:`thy-nygaard2020modelling`.
+
 References:
 ===========
    .. bibliography:: /source/zrefs.bib

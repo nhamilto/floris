@@ -13,10 +13,10 @@
 
 
 import numpy as np
-
 import matplotlib
-import floris.tools as wfct
 import matplotlib.pyplot as plt
+
+import floris.tools as wfct
 
 
 matplotlib.use("tkagg")
@@ -72,7 +72,9 @@ max_yaw = 25.0
 # yaw_angles = yaw_opt.optimize()
 # yaw_angles = [24,24,22,16,0]
 yaw_angles = [25, 25, 25, 0, 0]
+# yaw_angles = [23.6, 23.2, 21.,  18.1, 13.9,  0. ]
 # yaw_angles = [20,20,0]
+# yaw_angles = [0,0,0,0,0]
 
 fi.reinitialize_flow_field()
 print("==========================================")
@@ -115,9 +117,11 @@ power_initial = fi.get_farm_power()
 
 # Perform optimization
 # yaw_angles = yaw_opt.optimize()
-yaw_angles = [25, 25, 22, 18, 0]
-# yaw_angles = [25,25,25,0,0]
+# yaw_angles = [25,25,22,18,0]
+yaw_angles = [25, 25, 25, 0, 0]
 # yaw_angles = [20,20,0]
+# yaw_angles = [0,0,0,0,0]
+
 print("==========================================")
 fi.reinitialize_flow_field()
 fi.calculate_wake(yaw_angles=yaw_angles)
@@ -142,7 +146,7 @@ print(
 )
 print("==========================================")
 
-## For tuning TI model
+# For tuning TI model
 
 SB = [2419000.0, 915100.0, 945100.0, 1046200.0, 1037700.0, 1077700.0]
 SOC = [2046400.0, 1062300.0, 1239500.0, 1353700.0, 1421400.0, 1761700.0]

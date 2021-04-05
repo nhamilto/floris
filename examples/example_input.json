@@ -21,7 +21,7 @@
       ],
       "wind_shear": 0.12,
       "wind_speed": [
-        8.0
+        9.0
       ],
       "wind_veer": 0.0,
       "wind_x": [
@@ -54,6 +54,7 @@
       "blade_pitch": 0.0,
       "generator_efficiency": 1.0,
       "hub_height": 90.0,
+      "ngrid": 5,
       "pP": 1.88,
       "pT": 1.88,
       "power_thrust_table": {
@@ -208,6 +209,7 @@
           25.5
         ]
       },
+      "rloc": 0.5,
       "rotor_diameter": 126.0,
       "tilt_angle": 0.0,
       "use_points_on_perimeter": false,
@@ -233,8 +235,8 @@
         "wake_turbulence_parameters": {
           "crespo_hernandez": {
             "ai": 0.8,
-            "constant": 0.37,
-            "downstream": -0.275,
+            "constant": 0.5,
+            "downstream": -0.32,
             "initial": 0.1
           }
         },

@@ -1,4 +1,4 @@
-# Copyright 2020 NREL
+# Copyright 2021 NREL
 
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -16,7 +16,7 @@
 import sys
 
 from pycallgraph import Config, PyCallGraph, GlobbingFilter
-from floris.floris import Floris
+from floris.simulation import Floris
 from pycallgraph.output import GraphvizOutput
 
 
@@ -31,7 +31,7 @@ with PyCallGraph(config=config, output=graphviz):
     if len(sys.argv) > 1:
         floris = Floris(sys.argv[1])
     else:
-        floris = Floris("example_input.json")
+        floris = Floris("../examples/example_input.json")
 
 graphviz = GraphvizOutput()
 graphviz.output_file = "calculate_wake.png"

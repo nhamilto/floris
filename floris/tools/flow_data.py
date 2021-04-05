@@ -1,4 +1,4 @@
-# Copyright 2020 NREL
+# Copyright 2021 NREL
 
 # Licensed under the Apache License, Version 2.0 (the "License"); you may not
 # use this file except in compliance with the License. You may obtain a copy of
@@ -87,7 +87,7 @@ class FlowData:
         vtk_file.write("FIELD attributes 1" + ln)
         vtk_file.write("UAvg 3 {} float".format(n_points) + ln)
         for u, v, w in zip(self.u, self.v, self.w):
-            vtk_file.write_line("{}".format(Vec3(u, v, w)) + ln)
+            vtk_file.write("{}".format(Vec3(u, v, w)) + ln)
 
     @staticmethod
     def crop(ff, x_bnds, y_bnds, z_bnds):
@@ -157,10 +157,10 @@ class FlowData:
             np.array: Array of u-velocity at specified points.
         """
         # print(x_points,y_points,z_points)
-        X = np.column_stack([self.x, self.y, self.z])
+        # X = np.column_stack([self.x, self.y, self.z])
         n_neighbors = 1
         knn = neighbors.KNeighborsRegressor(n_neighbors)
-        y_ = knn.fit(X, self.u)  # .predict(T)
+        # y_ = knn.fit(X, self.u)  # .predict(T)
 
         # Predict new points
         T = np.column_stack([x_points, y_points, z_points])
